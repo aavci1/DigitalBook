@@ -1,0 +1,11 @@
+material Page {
+  technique {
+    pass {
+      texture_unit {
+        texture 0.jpg
+        filtering anisotropic
+        max_anisotropy 8
+      }
+    }
+  }
+}
