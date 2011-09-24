@@ -32,9 +32,6 @@ private:
   KinectManager *mKinectManager;
   DepthAnalyzer *mDepthAnalyzer;
   OgreManager *mOgreManager;
-  Ogre::Viewport *mViewport;
-  Ogre::Camera *mCamera;
-  Ogre::SceneNode *mBookNode;
   /// sheets on the left side
   QList<Ogre::Entity *> mPrevSheets;
   /// sheets on the right side

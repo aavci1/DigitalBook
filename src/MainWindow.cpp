@@ -13,11 +13,9 @@
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 
-#include <QDebug>
 #include <QTimer>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), mKinectManager(new KinectManager(this)), mDepthAnalyzer(new DepthAnalyzer(this)), mOgreManager(new OgreManager(this)),
-mViewport(0), mCamera(0), mBookNode(0), mCurrentSheet(0), mCurrentDirection(DepthAnalyzer::NoDirection), mCurrentAngle(180) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), mKinectManager(new KinectManager(this)), mDepthAnalyzer(new DepthAnalyzer(this)), mOgreManager(new OgreManager(this)), mCurrentSheet(0), mCurrentDirection(DepthAnalyzer::NoDirection), mCurrentAngle(180) {
   setupUi(this);
   // connect signals
   connect(mKinectManager, SIGNAL(videoRetrieved(const quint8*,quint32)), videoWidget, SLOT(updateData(const quint8*,quint32)));
@@ -42,18 +40,18 @@ void MainWindow::createScene() {
   // set ambient light
   OgreManager::instance()->sceneManager()->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f));
   // create a camera
-  mCamera = OgreManager::instance()->sceneManager()->createCamera("Camera");
-  mCamera->setPosition(0.0f, 0.0f, 500.0f);
-  mCamera->pitch(Ogre::Degree(0.0f));
-  mCamera->setNearClipDistance(0.1f);
-  mCamera->setAutoAspectRatio(true);
+  Ogre::Camera *camera = OgreManager::instance()->sceneManager()->createCamera("Camera");
+  camera->setPosition(0.0f, 0.0f, 500.0f);
+  camera->pitch(Ogre::Degree(0.0f));
+  camera->setNearClipDistance(0.1f);
+  camera->setAutoAspectRatio(true);
   // create a viewport
-  mViewport = ogreWidget->renderWindow()->addViewport(mCamera);
-  mViewport->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f));
+  Ogre::Viewport *viewport = ogreWidget->renderWindow()->addViewport(camera);
+  viewport->setBackgroundColour(Ogre::ColourValue(0.0f, 0.0f, 0.0f));
   // create a cube
-  mBookNode = OgreManager::instance()->sceneManager()->getRootSceneNode()->createChildSceneNode();
+  Ogre::SceneNode *bookNode = OgreManager::instance()->sceneManager()->getRootSceneNode()->createChildSceneNode();
   for (int i = 1; i <= 5; ++i)
-    mNextSheets << createSheet(mBookNode, Ogre::Vector3(100.1f, 0.0f, 0.0f), QString("%1.jpg").arg(i));
+    mNextSheets << createSheet(bookNode, Ogre::Vector3(100.1f, 0.0f, 0.0f), QString("%1.jpg").arg(i));
   for (int i = 1; i < mNextSheets.size(); ++i)
     mNextSheets.at(i)->setVisible(false);
   if (mNextSheets.size() > 0)
@@ -82,7 +80,6 @@ Ogre::Entity *MainWindow::createSheet(Ogre::SceneNode *bookNode, Ogre::Vector3 o
 }
 
 void MainWindow::swipeRecognized(DepthAnalyzer::Direction direction) {
-  qDebug() << "Swipe Recognized" << (direction == DepthAnalyzer::Left ? "Left" : "Right");
   // if current sheet is null, select the appropiate sheet regarding direction
   if (mCurrentSheet == 0) {
     if ((direction == DepthAnalyzer::Left) && (mNextSheets.size() > 0)) {

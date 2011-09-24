@@ -1,6 +1,5 @@
 #include <QApplication>
 
-#include "KinectManager.h"
 #include "MainWindow.h"
 
 #if defined(Q_WS_WIN32)
