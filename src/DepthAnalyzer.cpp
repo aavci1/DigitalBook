@@ -22,7 +22,7 @@ DepthAnalyzer::~DepthAnalyzer() {
   delete d;
 }
 
-void DepthAnalyzer::analyze(const quint16 *buffer, const quint32 &timestamp) {
+void DepthAnalyzer::analyze(const quint16 *buffer, const quint32 &) {
   QSettings settings;
   // far threshold 110 cm converted to kinect depth
   float farThreshold = atan((settings.value("FarThreshold", 110).toInt() - 5.7f) / 33.825) * 1024 - 512;
