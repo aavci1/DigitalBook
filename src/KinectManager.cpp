@@ -5,6 +5,8 @@
 #include <libfreenect/libfreenect.h>
 #include <libfreenect/libfreenect_sync.h>
 
+static KinectManager *_instance = 0;
+
 class KinectManagerPrivate {
 public:
   KinectManagerPrivate() : context(0) {
@@ -14,6 +16,8 @@ public:
 };
 
 KinectManager::KinectManager(QObject *parent) : QObject(parent), d(new KinectManagerPrivate()) {
+  _instance = this;
+  // initializes kinect
   if (freenect_init(&d->context, NULL) < 0)
     return;
   // turn on the red led
@@ -30,6 +34,10 @@ KinectManager::~KinectManager() {
     freenect_shutdown(d->context);
   }
   delete d;
+}
+
+KinectManager *KinectManager::instance() {
+  return _instance;
 }
 
 void KinectManager::retrieve() {

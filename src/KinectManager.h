@@ -12,6 +12,8 @@ public:
   KinectManager(QObject *parent = 0);
   ~KinectManager();
 
+  static KinectManager *instance();
+
 private slots:
   void retrieve();
 
