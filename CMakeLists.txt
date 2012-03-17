@@ -1,4 +1,4 @@
-project (DigitalLibrary)
+project (DigitalBook)
 
 cmake_minimum_required (VERSION 2.6)
 # find qt4
@@ -40,6 +40,6 @@ qt4_add_resources (RESOURCE_FILES
   resources.qrc
 )
 # set up the executable target
-add_executable (DigitalLibrary WIN32 ${SOURCE_FILES} ${UI_FILES} ${MOC_HEADERS} ${RESOURCE_FILES} resources.rc)
+add_executable (DigitalBook WIN32 ${SOURCE_FILES} ${UI_FILES} ${MOC_HEADERS} ${RESOURCE_FILES} resources.rc)
 # link libraries
-target_link_libraries (DigitalLibrary freenect freenect_sync OgreMain ${QT_LIBRARIES})
+target_link_libraries (DigitalBook freenect freenect_sync OgreMain ${QT_LIBRARIES})

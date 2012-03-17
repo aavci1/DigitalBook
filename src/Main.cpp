@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   // organization and application names, to be used by QSettings
   QCoreApplication::setOrganizationName("BTS3D");
   QCoreApplication::setOrganizationDomain("bts3d.com");
-  QCoreApplication::setApplicationName("Digital Library");
+  QCoreApplication::setApplicationName("Digital Book");
   // create main window
   MainWindow main;
   // show main window
