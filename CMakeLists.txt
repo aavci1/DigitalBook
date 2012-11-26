@@ -1,8 +1,8 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.10)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(DigitalBook)
 
-SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 SET(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 
 # Qt
@@ -48,8 +48,7 @@ ELSE()
   MESSAGE(FATAL_ERROR "Freenect not found! Please make sure Freenect is installed and FREENECT_DIR is set correctly.")
 ENDIF(FREENECT_FOUND)
 
-# add source files
-set (SOURCE_FILES
+SET(SOURCES
   src/CameraThread.cpp
   src/DepthAnalyzer.cpp
   src/DepthWidget.cpp
@@ -59,12 +58,12 @@ set (SOURCE_FILES
   src/OgreWidget.cpp
   src/VideoWidget.cpp
 )
-# add ui files
-qt4_wrap_ui (UI_FILES
+
+QT4_WRAP_UI(UI_SOURCES
   src/MainWindow.ui
 )
-# add headers to be moc'ed
-qt4_wrap_cpp (MOC_HEADERS
+
+QT4_WRAP_CPP(MOC_SOURCES
   src/CameraThread.h
   src/DepthAnalyzer.h
   src/DepthWidget.h
@@ -73,11 +72,10 @@ qt4_wrap_cpp (MOC_HEADERS
   src/OgreWidget.h
   src/VideoWidget.h
 )
-# add resource files
-qt4_add_resources (RESOURCE_FILES
+
+QT4_ADD_RESOURCES(RESOURCES
   resources.qrc
 )
-# set up the executable target
-add_executable (DigitalBook WIN32 ${SOURCE_FILES} ${UI_FILES} ${MOC_HEADERS} ${RESOURCE_FILES} resources.rc)
-# link libraries
-target_link_libraries (DigitalBook ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${FREENECT_LIBRARIES})
+
+ADD_EXECUTABLE(DigitalBook WIN32 ${SOURCES} ${UI_SOURCES} ${MOC_SOURCES} ${RESOURCES} resources.rc)
+TARGET_LINK_LIBRARIES(DigitalBook ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${FREENECT_LIBRARIES})
