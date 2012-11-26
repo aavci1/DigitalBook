@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 
+#include "CameraThread.h"
 #include "DepthAnalyzer.h"
-#include "KinectManager.h"
 #include "OgreManager.h"
 
 #include <OGRE/OgreEntity.h>
@@ -15,14 +15,21 @@
 
 #include <QTimer>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), mKinectManager(new KinectManager(this)), mDepthAnalyzer(new DepthAnalyzer(this)), mOgreManager(new OgreManager(this)), mCurrentSheet(0), mCurrentDirection(DepthAnalyzer::NoDirection), mCurrentAngle(180) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), mCurrentSheet(0), mCurrentDirection(DepthAnalyzer::NoDirection), mCurrentAngle(180) {
   setupUi(this);
+  // create an ogre manager
+  new OgreManager(this);
+  // create kinect thread
+  CameraThread *cameraThread = new CameraThread(this);
+  DepthAnalyzer *depthAnalyzer = new DepthAnalyzer(this);
   // connect signals
-  connect(mKinectManager, SIGNAL(videoRetrieved(const quint8*,quint32)), videoWidget, SLOT(updateData(const quint8*,quint32)));
-  connect(mKinectManager, SIGNAL(depthRetrieved(const quint16*,quint32)), depthWidget, SLOT(updateData(const quint16*,quint32)));
-  connect(mKinectManager, SIGNAL(depthRetrieved(const quint16*,quint32)), mDepthAnalyzer, SLOT(analyze(const quint16*,quint32)));
-  connect(mDepthAnalyzer, SIGNAL(swipeRecognized(DepthAnalyzer::Direction)), this, SLOT(swipeRecognized(DepthAnalyzer::Direction)));
+  connect(cameraThread, SIGNAL(videoCaptured(const quint8*,quint32)), videoWidget, SLOT(updateData(const quint8*,quint32)));
+  connect(cameraThread, SIGNAL(depthCaptured(const quint16*,quint32)), depthWidget, SLOT(updateData(const quint16*,quint32)));
+  connect(cameraThread, SIGNAL(depthCaptured(const quint16*,quint32)), depthAnalyzer, SLOT(analyze(const quint16*,quint32)));
+  connect(depthAnalyzer, SIGNAL(swipeRecognized(DepthAnalyzer::Direction)), this, SLOT(swipeRecognized(DepthAnalyzer::Direction)));
   connect(ogreWidget, SIGNAL(windowCreated()), this, SLOT(createScene()));
+  // start camera thread
+  cameraThread->start();
 }
 
 void MainWindow::changeEvent(QEvent *e) {

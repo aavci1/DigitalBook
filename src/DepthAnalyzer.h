@@ -18,7 +18,7 @@ public:
   ~DepthAnalyzer();
 
 public slots:
-  void analyze(const quint16 *buffer, const quint32 &timestamp);
+  void analyze(const quint16 *buffer, const quint32 timestamp);
 
 signals:
   void swipeRecognized(DepthAnalyzer::Direction direction);

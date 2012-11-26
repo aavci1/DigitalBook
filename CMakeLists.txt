@@ -50,9 +50,9 @@ ENDIF(FREENECT_FOUND)
 
 # add source files
 set (SOURCE_FILES
+  src/CameraThread.cpp
   src/DepthAnalyzer.cpp
   src/DepthWidget.cpp
-  src/KinectManager.cpp
   src/Main.cpp
   src/MainWindow.cpp
   src/OgreManager.cpp
@@ -65,9 +65,9 @@ qt4_wrap_ui (UI_FILES
 )
 # add headers to be moc'ed
 qt4_wrap_cpp (MOC_HEADERS
+  src/CameraThread.h
   src/DepthAnalyzer.h
   src/DepthWidget.h
-  src/KinectManager.h
   src/MainWindow.h
   src/OgreManager.h
   src/OgreWidget.h

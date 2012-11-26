@@ -32,7 +32,7 @@ void DepthWidget::resizeEvent(QResizeEvent *) {
   d->image = d->source.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
-void DepthWidget::updateData(const quint16 *buffer, const quint32 &timestamp) {
+void DepthWidget::updateData(const quint16 *buffer, const quint32 timestamp) {
   if (d->timestamp == timestamp)
     return;
   // read settings

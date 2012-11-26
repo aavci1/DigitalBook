@@ -16,7 +16,7 @@ protected:
   void resizeEvent(QResizeEvent *);
 
 public slots:
-  void updateData(const quint8 *buffer, const quint32 &timestamp);
+  void updateData(const quint8 *buffer, const quint32 timestamp);
 
 private:
   VideoWidgetPrivate *d;

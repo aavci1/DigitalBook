@@ -7,10 +7,6 @@
 
 #include <OGRE/OgrePrerequisites.h>
 
-class DepthAnalyzer;
-class KinectManager;
-class OgreManager;
-
 class MainWindow : public QMainWindow, private Ui::MainWindow {
   Q_OBJECT
 
@@ -29,9 +25,6 @@ private slots:
   void turnPage();
 
 private:
-  KinectManager *mKinectManager;
-  DepthAnalyzer *mDepthAnalyzer;
-  OgreManager *mOgreManager;
   /// sheets on the left side
   QList<Ogre::Entity *> mPrevSheets;
   /// sheets on the right side
