@@ -46,7 +46,7 @@ void DepthWidget::updateData(const quint16 *buffer, const quint32 &timestamp) {
     for (int j = 0; j < 640; ++j) {
       quint8 color = 0;
       if (buffer[i * 640 + j] < farThreshold)
-        color = (255 - (buffer[i * 640 + j] >> 1) & 0x00ff);
+        color = (255 - ((buffer[i * 640 + j] >> 1) & 0x00ff));
       scanline[j * 3 + 0] = color;
       scanline[j * 3 + 1] = color;
       scanline[j * 3 + 2] = color;
