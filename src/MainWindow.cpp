@@ -1,6 +1,6 @@
 #include "MainWindow.h"
 
-#include "CameraThread.h"
+#include "KinectThread.h"
 #include "DepthAnalyzer.h"
 #include "OgreManager.h"
 
@@ -15,21 +15,18 @@
 
 #include <QTimer>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), mCurrentSheet(0), mCurrentDirection(DepthAnalyzer::NoDirection), mCurrentAngle(180) {
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), mCurrentSheet(0), mDepthAnalyzer(new DepthAnalyzer(this)), mCurrentDirection(DepthAnalyzer::NoDirection), mCurrentAngle(180) {
   setupUi(this);
   // create an ogre manager
   new OgreManager(this);
-  // create kinect thread
-  CameraThread *cameraThread = new CameraThread(this);
-  DepthAnalyzer *depthAnalyzer = new DepthAnalyzer(this);
-  // connect signals
-  connect(cameraThread, SIGNAL(videoCaptured(const quint8*,quint32)), videoWidget, SLOT(updateData(const quint8*,quint32)));
-  connect(cameraThread, SIGNAL(depthCaptured(const quint16*,quint32)), depthWidget, SLOT(updateData(const quint16*,quint32)));
-  connect(cameraThread, SIGNAL(depthCaptured(const quint16*,quint32)), depthAnalyzer, SLOT(analyze(const quint16*,quint32)));
-  connect(depthAnalyzer, SIGNAL(swipeRecognized(DepthAnalyzer::Direction)), this, SLOT(swipeRecognized(DepthAnalyzer::Direction)));
+  // connect ogre widget signals
   connect(ogreWidget, SIGNAL(windowCreated()), this, SLOT(createScene()));
-  // start camera thread
-  cameraThread->start();
+  // connect depth analyzer
+  connect(mDepthAnalyzer, SIGNAL(swipeRecognized(DepthAnalyzer::Direction)), this, SLOT(swipeRecognized(DepthAnalyzer::Direction)));
+  // create kinect thread
+  KinectThread *kinectThread = new KinectThread(this);
+  connect(kinectThread, SIGNAL(captured(uchar*,ushort*,int,int)), this, SLOT(updateData(uchar*,ushort*,int,int)));
+  kinectThread->start();
 }
 
 void MainWindow::changeEvent(QEvent *e) {
@@ -41,6 +38,15 @@ void MainWindow::changeEvent(QEvent *e) {
   default:
     break;
   }
+}
+
+void MainWindow::updateData(uchar *image, ushort *depth, int width, int height) {
+    videoWidget->updateData(image, depth, width, height);
+    depthWidget->updateData(image, depth, width, height);
+    mDepthAnalyzer->updateData(image, depth, width, height);
+    // clean up
+    delete[] image;
+    delete[] depth;
 }
 
 void MainWindow::createScene() {
@@ -145,5 +151,5 @@ void MainWindow::turnPage() {
     }
   }
   // schedule next shot
-  QTimer::singleShot(5, this, SLOT(turnPage()));
+  QTimer::singleShot(15, this, SLOT(turnPage()));
 }

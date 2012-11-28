@@ -16,7 +16,7 @@ protected:
   void resizeEvent(QResizeEvent *);
 
 public slots:
-  void updateData(const quint16 *buffer, const quint32 timestamp);
+  void updateData(uchar *image, ushort *depth, int width, int height);
 
 private:
   DepthWidgetPrivate *d;

@@ -40,18 +40,18 @@ ELSE()
   MESSAGE(FATAL_ERROR "Boost not found! Please make sure Boost is installed and BOOST_ROOT is set correctly.")
 ENDIF(Boost_FOUND)
 
-# Freenect
-FIND_PACKAGE(Freenect REQUIRED)
-IF(FREENECT_FOUND)
-  INCLUDE_DIRECTORIES(${FREENECT_INCLUDE_DIR})
+# OpenNI
+FIND_PACKAGE(OpenNI REQUIRED)
+IF(OPENNI_FOUND)
+  INCLUDE_DIRECTORIES(${OPENNI_INCLUDE_DIR})
 ELSE()
-  MESSAGE(FATAL_ERROR "Freenect not found! Please make sure Freenect is installed and FREENECT_DIR is set correctly.")
-ENDIF(FREENECT_FOUND)
+  MESSAGE(FATAL_ERROR "OpenNI not found! Please make sure OpenNI is installed and OPENNI_DIR is set correctly.")
+ENDIF(OPENNI_FOUND)
 
 SET(SOURCES
-  src/CameraThread.cpp
   src/DepthAnalyzer.cpp
   src/DepthWidget.cpp
+  src/KinectThread.cpp
   src/Main.cpp
   src/MainWindow.cpp
   src/OgreManager.cpp
@@ -64,9 +64,9 @@ QT4_WRAP_UI(UI_SOURCES
 )
 
 QT4_WRAP_CPP(MOC_SOURCES
-  src/CameraThread.h
   src/DepthAnalyzer.h
   src/DepthWidget.h
+  src/KinectThread.h
   src/MainWindow.h
   src/OgreManager.h
   src/OgreWidget.h
@@ -78,4 +78,4 @@ QT4_ADD_RESOURCES(RESOURCES
 )
 
 ADD_EXECUTABLE(DigitalBook WIN32 ${SOURCES} ${UI_SOURCES} ${MOC_SOURCES} ${RESOURCES} resources.rc)
-TARGET_LINK_LIBRARIES(DigitalBook ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${FREENECT_LIBRARIES})
+TARGET_LINK_LIBRARIES(DigitalBook ${QT_LIBRARIES} ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${OPENNI_LIBRARIES})

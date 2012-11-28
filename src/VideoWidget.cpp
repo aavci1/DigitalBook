@@ -29,14 +29,10 @@ void VideoWidget::resizeEvent(QResizeEvent *) {
   d->image = d->source.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
-void VideoWidget::updateData(const quint8 *buffer, const quint32 timestamp) {
-  if (d->timestamp == timestamp)
-    return;
+void VideoWidget::updateData(uchar *image, ushort *depth, int width, int height) {
   // update image
-  d->source = QImage(buffer, 640, 480, QImage::Format_RGB888);
+  d->source = QImage(image, width, height, QImage::Format_RGB888);
   d->image = d->source.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-  // update timestamp
-  d->timestamp = timestamp;
   // update view
   update();
 }
