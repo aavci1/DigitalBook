@@ -8,7 +8,7 @@
 
 class BookWidgetPrivate {
 public:
-    BookWidgetPrivate() : timeLine(0), value(0.0f), currentPage(0), displayInfo(0), frameCount(0), totalTime(0) {
+    BookWidgetPrivate() : timeLine(0), value(0.0f), currentLeft(0), currentRight(0), displayInfo(0), frameCount(0), totalTime(0) {
     }
 
     ~BookWidgetPrivate() {
@@ -23,7 +23,8 @@ public:
             glDeleteTextures(1, &texture);
         }
         // release current page
-        glDeleteTextures(1, &currentPage);
+        glDeleteTextures(1, &currentLeft);
+        glDeleteTextures(1, &currentRight);
     }
 
     QTimeLine *timeLine;
@@ -31,7 +32,8 @@ public:
 
     QList<GLuint> prevPages;
     QList<GLuint> nextPages;
-    GLuint currentPage;
+    GLuint currentLeft;
+    GLuint currentRight;
 
     bool displayInfo;
     long frameCount;
@@ -54,8 +56,9 @@ BookWidget::~BookWidget() {
 void BookWidget::prevPage() {
     qDebug() << "BookWidget::prevPage();";
     // set current page
-    if (!d->currentPage && !d->nextPages.empty()) {
-        d->currentPage = d->nextPages.takeFirst();
+    if (!d->currentLeft && !d->nextPages.empty()) {
+        d->currentLeft = d->nextPages.takeFirst();
+        d->currentRight = d->nextPages.takeFirst();
         d->timeLine->setCurrentTime(0);
     }
     // update timeline direction
@@ -67,8 +70,9 @@ void BookWidget::prevPage() {
 void BookWidget::nextPage() {
     qDebug() << "BookWidget::nextPage();";
     // set current page
-    if (!d->currentPage && !d->prevPages.empty()) {
-        d->currentPage = d->prevPages.takeLast();
+    if (!d->currentLeft && !d->prevPages.empty()) {
+        d->currentRight = d->prevPages.takeLast();
+        d->currentLeft = d->prevPages.takeLast();
         d->timeLine->setCurrentTime(d->timeLine->duration());
     }
     // update timeline direction
@@ -86,12 +90,17 @@ void BookWidget::animationValueChanged(qreal value) {
 }
 
 void BookWidget::animationFinished() {
-    if (d->currentPage) {
-        if (d->timeLine->direction() == QTimeLine::Forward)
-            d->prevPages.push_back(d->currentPage);
-        else if (d->timeLine->direction() == QTimeLine::Backward)
-            d->nextPages.push_front(d->currentPage);
-        d->currentPage = 0;
+    if (d->currentLeft) {
+        if (d->timeLine->direction() == QTimeLine::Forward) {
+            d->prevPages.push_back(d->currentLeft);
+            d->prevPages.push_back(d->currentRight);
+        } else if (d->timeLine->direction() == QTimeLine::Backward) {
+            d->nextPages.push_front(d->currentRight);
+            d->nextPages.push_front(d->currentLeft);
+        }
+        // reset current page
+        d->currentLeft = 0;
+        d->currentRight = 0;
     }
     // update view
     updateGL();
@@ -143,13 +152,13 @@ void BookWidget::resizeGL(int width, int height) {
     updateGL();
 }
 
-void renderPage(GLuint texture, float width, float height) {
+void renderPage(GLuint texture, float width, float height, bool mirror = false) {
     // copy page data to the texture
     glBindTexture(GL_TEXTURE_2D, texture);
     // draw quad
     glBegin(GL_QUADS);
-    glVertex3f(-0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(+0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(1.0f, -1.0f);
+    glVertex3f(-0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(mirror ? -1.0f : 1.0f, 0.0f);
+    glVertex3f(+0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(mirror ? -1.0f : 1.0f, -1.0f);
     glVertex3f(+0.5f * width, +0.5f * height, 0.0f); glTexCoord2f(0.0f, -1.0f);
     glVertex3f(-0.5f * width, +0.5f * height, 0.0f); glTexCoord2f(0.0f, 0.0f);
     glEnd();
@@ -174,7 +183,7 @@ void BookWidget::paintGL() {
         glRotatef(-180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.001f);
         // draw a quad
-        renderPage(d->prevPages.last(), 53.1f, 75.0f);
+        renderPage(d->prevPages.last(), 53.1f, 75.0f, true);
         // pop matrix
         glPopMatrix();
     }
@@ -190,7 +199,7 @@ void BookWidget::paintGL() {
         // pop matrix
         glPopMatrix();
     }
-    if (d->currentPage) {
+    if (d->currentLeft && d->currentRight) {
         // push matrix
         glPushMatrix();
         // set transformation
@@ -198,7 +207,10 @@ void BookWidget::paintGL() {
         glRotatef(-d->value * 180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.0f);
         // draw a quad
-        renderPage(d->currentPage, 53.1f, 75.0f);
+        if (d->value < 0.5f)
+            renderPage(d->currentLeft, 53.1f, 75.0f);
+        else
+            renderPage(d->currentRight, 53.1f, 75.0f, true);
         // pop matrix
         glPopMatrix();
     }
