@@ -3,9 +3,10 @@
 
 #include "ui_MainWindow.h"
 
-#include <DepthAnalyzer.h>
+#include "DepthAnalyzer.h"
+#include "KinectThread.h"
 
-#include <OGRE/OgrePrerequisites.h>
+class QTimeLine;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow {
   Q_OBJECT
@@ -13,28 +14,14 @@ class MainWindow : public QMainWindow, private Ui::MainWindow {
 public:
   MainWindow(QWidget *parent = 0);
 
-protected:
-  void changeEvent(QEvent *e);
-
-private:
-  Ogre::Entity *createSheet(Ogre::SceneNode *bookNode, Ogre::Vector3 offset, QString texture);
-
 private slots:
   void updateData(uchar *image, ushort *depth, int width, int height);
-  void createScene();
   void swipeRecognized(DepthAnalyzer::Direction direction);
-  void turnPage();
 
 private:
-  /// sheets on the left side
-  QList<Ogre::Entity *> mPrevSheets;
-  /// sheets on the right side
-  QList<Ogre::Entity *> mNextSheets;
-  /// currently animating sheet
-  Ogre::Entity *mCurrentSheet;
-  DepthAnalyzer *mDepthAnalyzer;
-  DepthAnalyzer::Direction mCurrentDirection;
-  int mCurrentAngle;
+  KinectThread *kinectThread;
+  DepthAnalyzer *depthAnalyzer;
+  QTimeLine *timeLine;
 };
 
 #endif // MAINWINDOW_H
