@@ -27,6 +27,8 @@ void DepthWidget::paintEvent(QPaintEvent *) {
 }
 
 void DepthWidget::resizeEvent(QResizeEvent *) {
+    if (d->source.isNull())
+        return;
     // update image
     d->image = d->source.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }

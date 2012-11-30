@@ -157,10 +157,14 @@ void renderPage(GLuint texture, float width, float height, bool mirror = false) 
     glBindTexture(GL_TEXTURE_2D, texture);
     // draw quad
     glBegin(GL_QUADS);
-    glVertex3f(-0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(mirror ? -1.0f : 1.0f, 0.0f);
-    glVertex3f(+0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(mirror ? -1.0f : 1.0f, -1.0f);
-    glVertex3f(+0.5f * width, +0.5f * height, 0.0f); glTexCoord2f(0.0f, -1.0f);
-    glVertex3f(-0.5f * width, +0.5f * height, 0.0f); glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-0.5f * width, -0.5f * height, 0.0f);
+    glTexCoord2f(mirror ? -1.0f : 1.0f, 0.0f);
+    glVertex3f(+0.5f * width, -0.5f * height, 0.0f);
+    glTexCoord2f(mirror ? -1.0f : 1.0f, -1.0f);
+    glVertex3f(+0.5f * width, +0.5f * height, 0.0f);
+    glTexCoord2f(0.0f, -1.0f);
+    glVertex3f(-0.5f * width, +0.5f * height, 0.0f);
+    glTexCoord2f(0.0f, 0.0f);
     glEnd();
 }
 
@@ -179,7 +183,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -100.0f);
+        glTranslatef(0.0f, 0.0f, -120.0f);
         glRotatef(-180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.001f);
         // draw a quad
@@ -191,7 +195,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -100.0f);
+        glTranslatef(0.0f, 0.0f, -120.0f);
         glRotatef(0, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, -0.001f);
         // draw a quad
@@ -203,7 +207,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -100.0f);
+        glTranslatef(0.0f, 0.0f, -120.0f);
         glRotatef(-d->value * 180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.0f);
         // draw a quad

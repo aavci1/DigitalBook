@@ -6,20 +6,20 @@
 class VideoWidgetPrivate;
 
 class VideoWidget : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  VideoWidget(QWidget *parent = 0);
-  ~VideoWidget();
+    VideoWidget(QWidget *parent = 0);
+    ~VideoWidget();
 
 protected:
-  void paintEvent(QPaintEvent *);
-  void resizeEvent(QResizeEvent *);
+    void paintEvent(QPaintEvent *);
+    void resizeEvent(QResizeEvent *);
 
 public slots:
-  void updateData(uchar *image, ushort *depth, int width, int height);
+    void updateData(uchar *image, ushort *depth, int width, int height);
 
 private:
-  VideoWidgetPrivate *d;
+    VideoWidgetPrivate *d;
 };
 
 #endif // VIDEOWIDGET_H

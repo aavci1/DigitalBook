@@ -7,17 +7,17 @@
 #include "KinectThread.h"
 
 class MainWindow : public QMainWindow, private Ui::MainWindow {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = 0);
 
 private slots:
-  void updateData(uchar *image, ushort *depth, int width, int height);
+    void updateData(uchar *image, ushort *depth, int width, int height);
 
 private:
-  KinectThread *kinectThread;
-  DepthAnalyzer *depthAnalyzer;
+    KinectThread *kinectThread;
+    DepthAnalyzer *depthAnalyzer;
 };
 
 #endif // MAINWINDOW_H

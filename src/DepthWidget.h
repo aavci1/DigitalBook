@@ -6,20 +6,20 @@
 class DepthWidgetPrivate;
 
 class DepthWidget : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  DepthWidget(QWidget *parent = 0);
-  ~DepthWidget();
+    DepthWidget(QWidget *parent = 0);
+    ~DepthWidget();
 
 protected:
-  void paintEvent(QPaintEvent *);
-  void resizeEvent(QResizeEvent *);
+    void paintEvent(QPaintEvent *);
+    void resizeEvent(QResizeEvent *);
 
 public slots:
-  void updateData(uchar *image, ushort *depth, int width, int height);
+    void updateData(uchar *image, ushort *depth, int width, int height);
 
 private:
-  DepthWidgetPrivate *d;
+    DepthWidgetPrivate *d;
 };
 
 #endif // DEPTHWIDGET_H
