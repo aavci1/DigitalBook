@@ -179,7 +179,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -125.0f);
+        glTranslatef(0.0f, 0.0f, -100.0f);
         glRotatef(-180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.001f);
         // draw a quad
@@ -191,7 +191,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -125.0f);
+        glTranslatef(0.0f, 0.0f, -100.0f);
         glRotatef(0, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, -0.001f);
         // draw a quad
@@ -203,7 +203,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -125.0f);
+        glTranslatef(0.0f, 0.0f, -100.0f);
         glRotatef(-d->value * 180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.0f);
         // draw a quad
