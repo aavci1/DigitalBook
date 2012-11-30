@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QGLFormat>
 #include <QLocale>
 
 #if defined(Q_WS_WIN32)
@@ -14,6 +15,9 @@ INT WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR argv, INT argc) {
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
 #endif
+    QGLFormat defaultGLFormat = QGLFormat::defaultFormat();
+    defaultGLFormat.setSampleBuffers(true);
+    defaultGLFormat.setSamples(4);
     // set company and product info
     QCoreApplication::setOrganizationName("BTS3D");
     QCoreApplication::setOrganizationDomain("www.bts3d.com");
