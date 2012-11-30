@@ -6,60 +6,32 @@
 #include <QList>
 #include <QTimeLine>
 
-class Page {
-public:
-    Page() : data(0), width(0), height(0) {
-    }
-
-    ~Page() {
-        delete[] data;
-    }
-
-    uchar *data;
-    int width;
-    int height;
-};
-
 class BookWidgetPrivate {
 public:
     BookWidgetPrivate() : timeLine(0), value(0.0f), currentPage(0), displayInfo(0), frameCount(0), totalTime(0) {
-        for (uint i = 0; i < 5; ++i) {
-            QImage image(QString("media/textures/%1.jpg").arg(i + 1));
-            if (image.isNull())
-                continue;
-
-            Page *page = new Page();
-            page->width = image.width();
-            page->height = image.height();
-            page->data = new uchar[image.byteCount()];
-            // copy image data
-            memcpy(page->data, image.bits(), image.byteCount());
-
-            nextPages.push_back(page);
-        }
     }
 
     ~BookWidgetPrivate() {
         // release previous pages
-        while (!prevPages.empty())
-            delete prevPages.takeFirst();
+        while (!prevPages.empty()) {
+            GLuint texture = prevPages.takeFirst();
+            glDeleteTextures(1, &texture);
+        }
         // release next pages
-        while (!nextPages.empty())
-            nextPages.takeFirst();
+        while (!nextPages.empty()) {
+            GLuint texture = nextPages.takeFirst();
+            glDeleteTextures(1, &texture);
+        }
         // release current page
-        delete currentPage;
-        // delete texture
-        glDeleteTextures(1, &texture);
+        glDeleteTextures(1, &currentPage);
     }
 
     QTimeLine *timeLine;
     float value;
 
-    QList<Page *> prevPages;
-    QList<Page *> nextPages;
-    Page *currentPage;
-
-    GLuint texture;
+    QList<GLuint> prevPages;
+    QList<GLuint> nextPages;
+    GLuint currentPage;
 
     bool displayInfo;
     long frameCount;
@@ -139,11 +111,24 @@ void BookWidget::initializeGL() {
     // enable texturing
     glEnable(GL_TEXTURE_2D);
     // create textures
-    glGenTextures(1, &d->texture);
-    // set texture parameters
-    glBindTexture(GL_TEXTURE_2D, d->texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    for (int i = 0; i < 5; ++i) {
+        QImage image(QString("media/textures/%1.jpg").arg(i + 1));
+        if (image.isNull())
+            continue;
+        // create texture
+        GLuint texture = 0;
+        glGenTextures(1, &texture);
+        // set texture parameters
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        // set texture data
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
+        // generate mipmaps
+        glGenerateMipmap(GL_TEXTURE_2D);
+        // push into the next pages
+        d->nextPages.push_back(texture);
+    }
 }
 
 void BookWidget::resizeGL(int width, int height) {
@@ -158,9 +143,9 @@ void BookWidget::resizeGL(int width, int height) {
     updateGL();
 }
 
-void renderPage(Page *page, int width, int height) {
+void renderPage(GLuint texture, int width, int height) {
     // copy page data to the texture
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, page->width, page->height, 0, GL_BGRA, GL_UNSIGNED_BYTE, page->data);
+    glBindTexture(GL_TEXTURE_2D, texture);
     // draw quad
     glBegin(GL_QUADS);
     glVertex3f(-0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(1.0f, 0.0f);
@@ -186,7 +171,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -5.0f);
+        glTranslatef(0.0f, 0.0f, -4.0f);
         glRotatef(-180, 0, 1, 0);
         glTranslatef(1.0f, 0.0f, 0.001f);
         // draw a quad
@@ -198,7 +183,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -5.0f);
+        glTranslatef(0.0f, 0.0f, -4.0f);
         glRotatef(0, 0, 1, 0);
         glTranslatef(1.0f, 0.0f, -0.001f);
         // draw a quad
@@ -210,7 +195,7 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -5.0f);
+        glTranslatef(0.0f, 0.0f, -4.0f);
         glRotatef(-d->value * 180, 0, 1, 0);
         glTranslatef(1.0f, 0.0f, 0.0f);
         // draw a quad
@@ -219,37 +204,37 @@ void BookWidget::paintGL() {
         glPopMatrix();
     }
 #else
-    for (uint i = 0; i < d->prevPages.size(); ++i) {
-        glColor3f(d->prevPages.at(i)->r,
-                  d->prevPages.at(i)->g,
-                  d->prevPages.at(i)->b);
+    for (int i = 0; i < d->prevPages.size(); ++i) {
+        // push matrix
         glPushMatrix();
-        glTranslatef(-1 - 0.1f * (d->prevPages.size() - i - 1), 0.0f, -5.0f);
+        // set transformation
+        glTranslatef(-1 - 0.1f * (d->prevPages.size() - i - 1), 0.0f, -4.0f);
         glRotatef(+70, 0, 1, 0);
         // draw a quad
-        drawQuad(2.27f, 3.78f);
+        renderPage(d->prevPages.at(i), 2.27f, 3.78f);
+        // pop matrix
         glPopMatrix();
     }
-    for (uint i = 0; i < d->nextPages.size(); ++i) {
-        glColor3f(d->nextPages.at(i)->r,
-                  d->nextPages.at(i)->g,
-                  d->nextPages.at(i)->b);
+    for (int i = 0; i < d->nextPages.size(); ++i) {
+        // push matrix
         glPushMatrix();
-        glTranslatef(+1 + i * 0.1f, 0.0f, -5.0f);
+        // set transformation
+        glTranslatef(+1 - 0.1f * (d->nextPages.size() - i - 1), 0.0f, -4.0f);
         glRotatef(-70, 0, 1, 0);
         // draw a quad
-        drawQuad(2.27f, 3.78f);
+        renderPage(d->nextPages.at(i), 2.27f, 3.78f);
+        // pop matrix
         glPopMatrix();
     }
     if (d->currentPage) {
-        glColor3f(d->currentPage->r,
-                  d->currentPage->g,
-                  d->currentPage->b);
+        // push matrix
         glPushMatrix();
-        glTranslatef(-d->value * 2 + 1, 0.0f, -5.0f);
+        // set transformation
+        glTranslatef(-d->value * 2 + 1, 0.0f, -4.0f);
         glRotatef(d->value * 140 - 70, 0, 1, 0);
         // draw a quad
-        drawQuad(2.27f, 3.78f);
+        renderPage(d->currentPage, 2.27f, 3.78f);
+        // pop matrix
         glPopMatrix();
     }
 #endif
