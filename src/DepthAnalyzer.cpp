@@ -1,16 +1,17 @@
 #include "DepthAnalyzer.h"
 
 #include <QSettings>
+#include <QSwipeGesture>
 
 #include <cmath>
 
 class DepthAnalyzerPrivate {
 public:
-    DepthAnalyzerPrivate() : lastCenterX(0.0f), lastDirection(DepthAnalyzer::NoDirection) {
+    DepthAnalyzerPrivate() : lastCenterX(0.0f), lastDirection(QSwipeGesture::NoDirection) {
     }
 
     float lastCenterX;
-    DepthAnalyzer::Direction lastDirection;
+    QSwipeGesture::SwipeDirection lastDirection;
 };
 
 DepthAnalyzer::DepthAnalyzer(QObject *parent) : QObject(parent), d(new DepthAnalyzerPrivate()) {
@@ -43,23 +44,27 @@ void DepthAnalyzer::updateData(uchar *image, ushort *depth, int width, int heigh
     }
     int minimumPointCount = 400;
     int maxVariation = 50;
-    Direction direction = NoDirection;
+    QSwipeGesture::SwipeDirection direction = QSwipeGesture::NoDirection;
     if (pointCount > minimumPointCount) {
         centerX /= pointCount;
         centerY /= pointCount;
         // determine new direction
         if ((centerX - d->lastCenterX) > maxVariation)
-            direction = Right;
+            direction = QSwipeGesture::Right;
         else if ((centerX - d->lastCenterX) < -maxVariation)
-            direction = Left;
+            direction = QSwipeGesture::Left;
         else
             direction = d->lastDirection;
     }
     // check if direction changed
     if (direction != d->lastDirection) {
         // emit swipe signal if threshold has been reached
-        if (std::abs(centerX - d->lastCenterX) > swipeThreshold)
-            emit swipeRecognized(d->lastDirection);
+        if (qAbs(centerX - d->lastCenterX) > swipeThreshold) {
+            if (d->lastDirection == QSwipeGesture::Left)
+                emit swipeLeft();
+            else if (d->lastDirection == QSwipeGesture::Right)
+                emit swipeRight();
+        }
         // update start point and direction
         d->lastCenterX = centerX;
         d->lastDirection = direction;

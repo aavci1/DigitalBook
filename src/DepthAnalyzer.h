@@ -8,12 +8,6 @@ class DepthAnalyzerPrivate;
 class DepthAnalyzer : public QObject {
   Q_OBJECT
 public:
-  enum Direction {
-    NoDirection,
-    Left,
-    Right
-  };
-
   DepthAnalyzer(QObject *parent = 0);
   ~DepthAnalyzer();
 
@@ -21,7 +15,8 @@ public slots:
   void updateData(uchar *image, ushort *depth, int width, int height);
 
 signals:
-  void swipeRecognized(DepthAnalyzer::Direction direction);
+  void swipeLeft();
+  void swipeRight();
 
 private:
   DepthAnalyzerPrivate *d;

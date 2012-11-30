@@ -3,15 +3,17 @@
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QKeyEvent>
+#include <QTimeLine>
 
 class BookWidgetPrivate {
 public:
-    BookWidgetPrivate() : value(0.0f), displayInfo(0), frameCount(0), totalTime(0) {
+    BookWidgetPrivate() : timeLine(0), value(0.0f), displayInfo(0), frameCount(0), totalTime(0) {
     }
 
     ~BookWidgetPrivate() {
     }
 
+    QTimeLine *timeLine;
     float value;
 
     bool displayInfo;
@@ -21,10 +23,30 @@ public:
 
 BookWidget::BookWidget(QWidget *parent) : QGLWidget(parent), d(new BookWidgetPrivate()) {
     setFocusPolicy(Qt::WheelFocus);
+    // create timeline object
+    d->timeLine = new QTimeLine(2000, this);
+    d->timeLine->setUpdateInterval(15);
+    connect(d->timeLine, SIGNAL(valueChanged(qreal)), this, SLOT(animationValueChanged(qreal)));
 }
 
 BookWidget::~BookWidget() {
     delete d;
+}
+
+void BookWidget::prevPage() {
+    qDebug() << "BookWidget::prevPage();";
+    // update timeline direction
+    d->timeLine->stop();
+    d->timeLine->setDirection(QTimeLine::Forward);
+    d->timeLine->resume();
+}
+
+void BookWidget::nextPage() {
+    qDebug() << "BookWidget::nextPage();";
+    // update timeline direction
+    d->timeLine->stop();
+    d->timeLine->setDirection(QTimeLine::Backward);
+    d->timeLine->resume();
 }
 
 void BookWidget::animationValueChanged(qreal value) {
@@ -33,10 +55,6 @@ void BookWidget::animationValueChanged(qreal value) {
     d->value = value;
     // update view
     updateGL();
-}
-
-void BookWidget::animationFinished() {
-    qDebug() << "BookWidget::animationFinished();";
 }
 
 void BookWidget::initializeGL() {

@@ -1,8 +1,5 @@
 #include "MainWindow.h"
 
-#include <QDebug>
-#include <QTimeLine>
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi(this);
     // create kinect thread
@@ -11,12 +8,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     kinectThread->start();
     // create depth analyzer
     depthAnalyzer = new DepthAnalyzer(this);
-    connect(depthAnalyzer, SIGNAL(swipeRecognized(DepthAnalyzer::Direction)), this, SLOT(swipeRecognized(DepthAnalyzer::Direction)));
-    // create timeline object
-    timeLine = new QTimeLine(2000, this);
-    timeLine->setUpdateInterval(15);
-    connect(timeLine, SIGNAL(valueChanged(qreal)), bookWidget, SLOT(animationValueChanged(qreal)));
-    connect(timeLine, SIGNAL(finished()), bookWidget, SLOT(animationFinished()));
+    connect(depthAnalyzer, SIGNAL(swipeLeft()), bookWidget, SLOT(prevPage()));
+    connect(depthAnalyzer, SIGNAL(swipeRight()), bookWidget, SLOT(nextPage()));
 }
 
 void MainWindow::updateData(uchar *image, ushort *depth, int width, int height) {
@@ -26,17 +19,4 @@ void MainWindow::updateData(uchar *image, ushort *depth, int width, int height) 
     // clean up
     delete[] image;
     delete[] depth;
-}
-
-void MainWindow::swipeRecognized(DepthAnalyzer::Direction direction) {
-    qDebug() << "MainWindow::swipeRecognized(" << (direction == DepthAnalyzer::Left ? "Left" : "Right") << ");";
-
-    timeLine->stop();
-
-    if (direction == DepthAnalyzer::Right)
-        timeLine->setDirection(QTimeLine::Backward);
-    else if (direction == DepthAnalyzer::Left)
-        timeLine->setDirection(QTimeLine::Forward);
-
-    timeLine->resume();
 }
