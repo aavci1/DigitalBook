@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+#include <QDebug>
 #include <QTimeLine>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -28,6 +29,8 @@ void MainWindow::updateData(uchar *image, ushort *depth, int width, int height) 
 }
 
 void MainWindow::swipeRecognized(DepthAnalyzer::Direction direction) {
+    qDebug() << "MainWindow::swipeRecognized(" << (direction == DepthAnalyzer::Left ? "Left" : "Right") << ");";
+
     timeLine->stop();
 
     if (direction == DepthAnalyzer::Right)

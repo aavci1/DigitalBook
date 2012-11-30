@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     // create main window
     MainWindow main;
     // show the widget
-    main.showFullScreen();
+    main.show();
     // start appliation event loop
     return app.exec();
 }
