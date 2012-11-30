@@ -41,7 +41,7 @@ public:
 BookWidget::BookWidget(QWidget *parent) : QGLWidget(parent), d(new BookWidgetPrivate()) {
     setFocusPolicy(Qt::WheelFocus);
     // create timeline object
-    d->timeLine = new QTimeLine(2000, this);
+    d->timeLine = new QTimeLine(1500, this);
     d->timeLine->setUpdateInterval(15);
     connect(d->timeLine, SIGNAL(valueChanged(qreal)), this, SLOT(animationValueChanged(qreal)));
     connect(d->timeLine, SIGNAL(finished()), this, SLOT(animationFinished()));
@@ -111,8 +111,8 @@ void BookWidget::initializeGL() {
     // enable texturing
     glEnable(GL_TEXTURE_2D);
     // create textures
-    for (int i = 0; i < 5; ++i) {
-        QImage image(QString("media/textures/%1.jpg").arg(i + 1));
+    for (int i = 1; i <= 60; ++i) {
+        QImage image(QString("media/%1.jpg").arg(QString::number(i), 2, '0'));
         if (image.isNull())
             continue;
         // create texture
@@ -143,7 +143,7 @@ void BookWidget::resizeGL(int width, int height) {
     updateGL();
 }
 
-void renderPage(GLuint texture, int width, int height) {
+void renderPage(GLuint texture, float width, float height) {
     // copy page data to the texture
     glBindTexture(GL_TEXTURE_2D, texture);
     // draw quad
@@ -170,11 +170,11 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -4.0f);
+        glTranslatef(0.0f, 0.0f, -125.0f);
         glRotatef(-180, 0, 1, 0);
-        glTranslatef(1.0f, 0.0f, 0.001f);
+        glTranslatef(26.55f, 0.0f, 0.001f);
         // draw a quad
-        renderPage(d->prevPages.last(), 2.27f, 3.78f);
+        renderPage(d->prevPages.last(), 53.1f, 75.0f);
         // pop matrix
         glPopMatrix();
     }
@@ -182,11 +182,11 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -4.0f);
+        glTranslatef(0.0f, 0.0f, -125.0f);
         glRotatef(0, 0, 1, 0);
-        glTranslatef(1.0f, 0.0f, -0.001f);
+        glTranslatef(26.55f, 0.0f, -0.001f);
         // draw a quad
-        renderPage(d->nextPages.first(), 2.27f, 3.78f);
+        renderPage(d->nextPages.first(), 53.1f, 75.0f);
         // pop matrix
         glPopMatrix();
     }
@@ -194,15 +194,14 @@ void BookWidget::paintGL() {
         // push matrix
         glPushMatrix();
         // set transformation
-        glTranslatef(0.0f, 0.0f, -4.0f);
+        glTranslatef(0.0f, 0.0f, -125.0f);
         glRotatef(-d->value * 180, 0, 1, 0);
-        glTranslatef(1.0f, 0.0f, 0.0f);
+        glTranslatef(26.55f, 0.0f, 0.0f);
         // draw a quad
-        renderPage(d->currentPage, 2.27f, 3.78f);
+        renderPage(d->currentPage, 53.1f, 75.0f);
         // pop matrix
         glPopMatrix();
     }
-
 
     // increase frame counter
     d->frameCount++;
