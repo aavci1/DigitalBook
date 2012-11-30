@@ -215,14 +215,15 @@ void BookWidget::paintGL() {
         glPopMatrix();
     }
 
+    long elapsed = timer.elapsed();
     // increase frame counter
     d->frameCount++;
     // increase total time
-    d->totalTime += timer.elapsed();
+    d->totalTime += elapsed;
     // display current and average frame time
     if (d->displayInfo) {
-        renderText(10.0f / this->width() - 1.0f, 45.0f / this->height() - 1.0f, 0, QString("Current Frame Time: %1").arg(timer.elapsed(), 2), QFont("Monospace", 12));
-        renderText(10.0f / this->width() - 1.0f, 10.0f / this->height() - 1.0f, 0, QString("Average Frame Time: %1").arg(d->totalTime / d->frameCount, 2), QFont("Monospace", 12));
+        renderText(5, height() - 25, QString("Current Frame Time: %1").arg(elapsed, 2), QFont("Monospace", 11));
+        renderText(5, height() - 5, QString("Average Frame Time: %1").arg(1.0f * d->totalTime / d->frameCount, 2), QFont("Monospace", 11));
     }
 }
 
