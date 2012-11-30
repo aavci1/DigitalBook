@@ -66,12 +66,12 @@ void BookWidget::resizeGL(int width, int height) {
     updateGL();
 }
 
-void drawQuad() {
+void drawQuad(int width, int height) {
     glBegin(GL_QUADS);
-    glVertex3f(-1.0f, -1.0f, 0.0f); glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(+1.0f, -1.0f, 0.0f); glTexCoord2f(1.0f, -1.0f);
-    glVertex3f(+1.0f, +1.0f, 0.0f); glTexCoord2f(0.0f, -1.0f);
-    glVertex3f(-1.0f, +1.0f, 0.0f); glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(+0.5f * width, -0.5f * height, 0.0f); glTexCoord2f(1.0f, -1.0f);
+    glVertex3f(+0.5f * width, +0.5f * height, 0.0f); glTexCoord2f(0.0f, -1.0f);
+    glVertex3f(-0.5f * width, +0.5f * height, 0.0f); glTexCoord2f(0.0f, 0.0f);
     glEnd();
 }
 
@@ -95,7 +95,7 @@ void BookWidget::paintGL() {
     glRotatef(d->value * 140 - 70, 0, 1, 0);
 #endif
     // draw a quad
-    drawQuad();
+    drawQuad(2.27f, 3.78f);
 
     // increase frame counter
     d->frameCount++;
