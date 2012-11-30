@@ -166,7 +166,6 @@ void BookWidget::paintGL() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-#if 1
     if (!d->prevPages.empty()) {
         // push matrix
         glPushMatrix();
@@ -203,41 +202,7 @@ void BookWidget::paintGL() {
         // pop matrix
         glPopMatrix();
     }
-#else
-    for (int i = 0; i < d->prevPages.size(); ++i) {
-        // push matrix
-        glPushMatrix();
-        // set transformation
-        glTranslatef(-1 - 0.1f * (d->prevPages.size() - i - 1), 0.0f, -4.0f);
-        glRotatef(+70, 0, 1, 0);
-        // draw a quad
-        renderPage(d->prevPages.at(i), 2.27f, 3.78f);
-        // pop matrix
-        glPopMatrix();
-    }
-    for (int i = 0; i < d->nextPages.size(); ++i) {
-        // push matrix
-        glPushMatrix();
-        // set transformation
-        glTranslatef(+1 - 0.1f * (d->nextPages.size() - i - 1), 0.0f, -4.0f);
-        glRotatef(-70, 0, 1, 0);
-        // draw a quad
-        renderPage(d->nextPages.at(i), 2.27f, 3.78f);
-        // pop matrix
-        glPopMatrix();
-    }
-    if (d->currentPage) {
-        // push matrix
-        glPushMatrix();
-        // set transformation
-        glTranslatef(-d->value * 2 + 1, 0.0f, -4.0f);
-        glRotatef(d->value * 140 - 70, 0, 1, 0);
-        // draw a quad
-        renderPage(d->currentPage, 2.27f, 3.78f);
-        // pop matrix
-        glPopMatrix();
-    }
-#endif
+
 
     // increase frame counter
     d->frameCount++;
