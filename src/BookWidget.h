@@ -16,6 +16,7 @@ public slots:
     void prevPage();
     void nextPage();
     void animationValueChanged(qreal value);
+    void animationFinished();
 
 protected:
     void initializeGL();
