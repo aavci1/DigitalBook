@@ -157,14 +157,15 @@ void renderPage(GLuint texture, float width, float height, bool mirror = false) 
     glBindTexture(GL_TEXTURE_2D, texture);
     // draw quad
     glBegin(GL_QUADS);
-    glVertex3f(-0.5f * width, -0.5f * height, 0.0f);
-    glTexCoord2f(mirror ? -1.0f : 1.0f, 0.0f);
-    glVertex3f(+0.5f * width, -0.5f * height, 0.0f);
-    glTexCoord2f(mirror ? -1.0f : 1.0f, -1.0f);
-    glVertex3f(+0.5f * width, +0.5f * height, 0.0f);
-    glTexCoord2f(0.0f, -1.0f);
-    glVertex3f(-0.5f * width, +0.5f * height, 0.0f);
-    glTexCoord2f(0.0f, 0.0f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-0.5f * width, -0.5f * height, 0.0f);
+    if (mirror) {
+        glTexCoord2f(-1.0f, 1.0f); glVertex3f(+0.5f * width, -0.5f * height, 0.0f);
+        glTexCoord2f(-1.0f, 0.0f); glVertex3f(+0.5f * width, +0.5f * height, 0.0f);
+    } else {
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(+0.5f * width, -0.5f * height, 0.0f);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(+0.5f * width, +0.5f * height, 0.0f);
+    }
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-0.5f * width, +0.5f * height, 0.0f);
     glEnd();
 }
 
