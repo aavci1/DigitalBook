@@ -1,6 +1,11 @@
 #include "BookWidget.h"
 
+#include "MainWindow.h"
+#include "Page.h"
+
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 #include <QElapsedTimer>
 #include <QKeyEvent>
 #include <QList>
@@ -8,32 +13,26 @@
 
 class BookWidgetPrivate {
 public:
-    BookWidgetPrivate() : timeLine(0), value(0.0f), currentLeft(0), currentRight(0), displayInfo(0), frameCount(0), totalTime(0) {
+    BookWidgetPrivate() : timeLine(0), value(0.0f), displayInfo(false), frameCount(0), totalTime(0) {
     }
 
     ~BookWidgetPrivate() {
-        // release previous pages
-        while (!prevPages.empty()) {
-            GLuint texture = prevPages.takeFirst();
-            glDeleteTextures(1, &texture);
-        }
-        // release next pages
-        while (!nextPages.empty()) {
-            GLuint texture = nextPages.takeFirst();
-            glDeleteTextures(1, &texture);
-        }
-        // release current page
-        glDeleteTextures(1, &currentLeft);
-        glDeleteTextures(1, &currentRight);
+        // delete previous pages
+        while (!prevPages.isEmpty())
+            delete prevPages.takeFirst();
+        // delete next pages
+        while (!nextPages.isEmpty())
+            delete nextPages.takeFirst();
+        // delete current page
+        delete currentPage;
     }
 
     QTimeLine *timeLine;
     float value;
 
-    QList<GLuint> prevPages;
-    QList<GLuint> nextPages;
-    GLuint currentLeft;
-    GLuint currentRight;
+    QList<Page *> prevPages;
+    QList<Page *> nextPages;
+    Page *currentPage;
 
     bool displayInfo;
     long frameCount;
@@ -56,9 +55,8 @@ BookWidget::~BookWidget() {
 void BookWidget::prevPage() {
     qDebug() << "BookWidget::prevPage();";
     // set current page
-    if (!d->currentLeft && !d->nextPages.empty()) {
-        d->currentLeft = d->nextPages.takeFirst();
-        d->currentRight = d->nextPages.takeFirst();
+    if (!d->currentPage && !d->nextPages.empty()) {
+        d->currentPage = d->nextPages.takeFirst();
         d->timeLine->setCurrentTime(0);
     }
     // update timeline direction
@@ -70,9 +68,8 @@ void BookWidget::prevPage() {
 void BookWidget::nextPage() {
     qDebug() << "BookWidget::nextPage();";
     // set current page
-    if (!d->currentLeft && !d->prevPages.empty()) {
-        d->currentRight = d->prevPages.takeLast();
-        d->currentLeft = d->prevPages.takeLast();
+    if (!d->currentPage && !d->prevPages.empty()) {
+        d->currentPage = d->prevPages.takeLast();
         d->timeLine->setCurrentTime(d->timeLine->duration());
     }
     // update timeline direction
@@ -90,17 +87,13 @@ void BookWidget::animationValueChanged(qreal value) {
 }
 
 void BookWidget::animationFinished() {
-    if (d->currentLeft) {
-        if (d->timeLine->direction() == QTimeLine::Forward) {
-            d->prevPages.push_back(d->currentLeft);
-            d->prevPages.push_back(d->currentRight);
-        } else if (d->timeLine->direction() == QTimeLine::Backward) {
-            d->nextPages.push_front(d->currentRight);
-            d->nextPages.push_front(d->currentLeft);
-        }
+    if (d->currentPage) {
+        if (d->timeLine->direction() == QTimeLine::Forward)
+            d->prevPages.push_back(d->currentPage);
+        else if (d->timeLine->direction() == QTimeLine::Backward)
+            d->nextPages.push_front(d->currentPage);
         // reset current page
-        d->currentLeft = 0;
-        d->currentRight = 0;
+        d->currentPage = 0;
     }
     // update view
     updateGL();
@@ -119,24 +112,24 @@ void BookWidget::initializeGL() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // enable texturing
     glEnable(GL_TEXTURE_2D);
-    // create textures
-    for (int i = 1; i <= 60; ++i) {
-        QImage image(QString("media/%1.jpg").arg(QString::number(i), 2, '0'));
-        if (image.isNull())
+    // file list
+    QFileInfoList files = QDir("media").entryInfoList(QDir::Files, QDir::Name | QDir::IgnoreCase);
+    // create pages
+    for (int i = 0; i < files.size() - 1; i += 2) {
+        // read left page data
+        QImage left(files.at(i).absoluteFilePath());
+        if (left.isNull())
             continue;
-        // create texture
-        GLuint texture = 0;
-        glGenTextures(1, &texture);
-        // set texture parameters
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        // set texture data
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_BGRA, GL_UNSIGNED_BYTE, image.bits());
-        // generate mipmaps
-        glGenerateMipmap(GL_TEXTURE_2D);
+        // read right page data
+        QImage right(files.at(i + 1).absoluteFilePath());
+        if (right.isNull())
+            continue;
+        // create page
+        Page *page = new Page();
+        page->setData(Left, left.width(), left.height(), left.bits());
+        page->setData(Right, right.width(), right.height(), right.bits());
         // push into the next pages
-        d->nextPages.push_back(texture);
+        d->nextPages.push_back(page);
     }
 }
 
@@ -150,23 +143,6 @@ void BookWidget::resizeGL(int width, int height) {
 
     // update view
     updateGL();
-}
-
-void renderPage(GLuint texture, float width, float height, bool mirror = false) {
-    // copy page data to the texture
-    glBindTexture(GL_TEXTURE_2D, texture);
-    // draw quad
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 1.0f); glVertex3f(-0.5f * width, -0.5f * height, 0.0f);
-    if (mirror) {
-        glTexCoord2f(-1.0f, 1.0f); glVertex3f(+0.5f * width, -0.5f * height, 0.0f);
-        glTexCoord2f(-1.0f, 0.0f); glVertex3f(+0.5f * width, +0.5f * height, 0.0f);
-    } else {
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(+0.5f * width, -0.5f * height, 0.0f);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(+0.5f * width, +0.5f * height, 0.0f);
-    }
-    glTexCoord2f(0.0f, 0.0f); glVertex3f(-0.5f * width, +0.5f * height, 0.0f);
-    glEnd();
 }
 
 void BookWidget::paintGL() {
@@ -187,8 +163,8 @@ void BookWidget::paintGL() {
         glTranslatef(0.0f, 0.0f, -120.0f);
         glRotatef(-180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.001f);
-        // draw a quad
-        renderPage(d->prevPages.last(), 53.1f, 75.0f, true);
+        // render page
+        d->prevPages.last()->render(Right, 53.1f, 75.0f);
         // pop matrix
         glPopMatrix();
     }
@@ -199,23 +175,23 @@ void BookWidget::paintGL() {
         glTranslatef(0.0f, 0.0f, -120.0f);
         glRotatef(0, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, -0.001f);
-        // draw a quad
-        renderPage(d->nextPages.first(), 53.1f, 75.0f);
+        // render page
+        d->nextPages.first()->render(Left, 53.1f, 75.0f);
         // pop matrix
         glPopMatrix();
     }
-    if (d->currentLeft && d->currentRight) {
+    if (d->currentPage) {
         // push matrix
         glPushMatrix();
         // set transformation
         glTranslatef(0.0f, 0.0f, -120.0f);
         glRotatef(-d->value * 180, 0, 1, 0);
         glTranslatef(26.55f, 0.0f, 0.0f);
-        // draw a quad
+        // render page
         if (d->value < 0.5f)
-            renderPage(d->currentLeft, 53.1f, 75.0f);
+            d->currentPage->render(Left, 53.1f, 75.0f);
         else
-            renderPage(d->currentRight, 53.1f, 75.0f, true);
+            d->currentPage->render(Right, 53.1f, 75.0f);
         // pop matrix
         glPopMatrix();
     }
@@ -241,6 +217,21 @@ void BookWidget::keyPressEvent(QKeyEvent *e) {
         prevPage();
     else if (e->key() == Qt::Key_Right)
         nextPage();
+    // toggle video/depth views
+    if (e->key() == Qt::Key_F9) {
+        MainWindow *mainWindow = dynamic_cast<MainWindow *>(topLevelWidget());
+        if (mainWindow) {
+            mainWindow->videoWidget->setVisible(!mainWindow->videoWidget->isVisible());
+            mainWindow->depthWidget->setVisible(!mainWindow->depthWidget->isVisible());
+        }
+    }
+    // toggle fullscreen
+    if ((e->modifiers() == Qt::ControlModifier) && (e->key() == Qt::Key_F)) {
+        if (topLevelWidget()->isFullScreen())
+            topLevelWidget()->showNormal();
+        else
+            topLevelWidget()->showFullScreen();
+    }
     // update view
     updateGL();
 }

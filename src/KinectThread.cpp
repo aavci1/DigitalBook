@@ -29,7 +29,7 @@ void KinectThread::run() {
     xn::Context context;
     xn::ScriptNode scriptNode;
     xn::EnumerationErrors errors;
-    XnStatus status = context.InitFromXmlFile("media/XnConfig.xml", scriptNode, &errors);
+    XnStatus status = context.InitFromXmlFile("Config.xml", scriptNode, &errors);
     // check status
     if (status == XN_STATUS_NO_NODE_PRESENT) {
         XnChar strError[1024];

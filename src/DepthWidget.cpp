@@ -37,17 +37,20 @@ void DepthWidget::updateData(uchar *image, ushort *depth, int width, int height)
     Q_UNUSED(image);
     // read settings
     QSettings settings;
-    // far threshold 200 cm converted to kinect depth
-    float farThreshold = atan((settings.value("FarThreshold", 200).toInt() - 5.7f) / 33.825) * 1024 - 512;
+    // near and far thresholds
+    float nearThreshold = settings.value("NearThreshold", 500).toInt();
+    float farThreshold = settings.value("FarThreshold", 1000).toInt();
     // update image
     d->source = QImage(width, height, QImage::Format_RGB888);
     for (int y = 0; y < height; ++y) {
         quint8 *scanline = d->source.scanLine(y);
+        memset(scanline, 0, width * 3);
         for (int x = 0; x < width; ++x) {
-            quint8 color = 0;
+            // only use within  the threshold ranges
+            if ((depth[y * width + x] == 0) || (depth[y * width + x] < nearThreshold) || (depth[y * width + x] > farThreshold))
+                continue;
             // only use points nearer than the far threshold
-            if (depth[y * width + x] != 0 && depth[y * width + x] <= farThreshold)
-                color = 256 * (1.0f - depth[y * width + x] / farThreshold);
+            quint8 color = 256 * (1.0f - depth[y * width + x] / farThreshold);
             // set color
             scanline[x * 3 + 0] = color;
             scanline[x * 3 + 1] = color;

@@ -2,9 +2,10 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(DigitalBook)
 
-ADD_DEFINITIONS(-Wall)
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 SET(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+
+ADD_DEFINITIONS(-Wall)
 
 # Qt
 FIND_PACKAGE(Qt4 REQUIRED)
@@ -47,6 +48,7 @@ SET(SOURCES
   src/KinectThread.cpp
   src/Main.cpp
   src/MainWindow.cpp
+  src/Page.cpp
   src/VideoWidget.cpp
 )
 

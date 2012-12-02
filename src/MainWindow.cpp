@@ -2,6 +2,9 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setupUi(this);
+    // hide video/depth widgets by default
+    videoWidget->setVisible(false);
+    depthWidget->setVisible(false);
     // create kinect thread
     kinectThread = new KinectThread(this);
     connect(kinectThread, SIGNAL(captured(uchar*,ushort*,int,int)), this, SLOT(updateData(uchar*,ushort*,int,int)));

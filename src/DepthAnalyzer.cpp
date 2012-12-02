@@ -23,8 +23,9 @@ DepthAnalyzer::~DepthAnalyzer() {
 
 void DepthAnalyzer::updateData(uchar *image, ushort *depth, int width, int height) {
     QSettings settings;
-    // far threshold 200 cm converted to kinect depth
-    float farThreshold = atan((settings.value("FarThreshold", 200).toInt() - 5.7f) / 33.825) * 1024 - 512;
+    // near and far thresholds
+    float nearThreshold = settings.value("NearThreshold", 500).toInt();
+    float farThreshold = settings.value("FarThreshold", 1000).toInt();
     // swipe threshold
     float swipeThreshold = settings.value("SwipeThreshold", 75).toInt();
     // calculate the center of mass within the range
@@ -32,8 +33,8 @@ void DepthAnalyzer::updateData(uchar *image, ushort *depth, int width, int heigh
     int pointCount = 0;
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            // only use points nearer than the far threshold
-            if ((depth[y * width + x] == 0) || (depth[y * width + x] > farThreshold))
+            // only use within  the threshold ranges
+            if ((depth[y * width + x] == 0) || (depth[y * width + x] < nearThreshold) || (depth[y * width + x] > farThreshold))
                 continue;
             // accumulate coords
             centerX += x;
@@ -57,7 +58,7 @@ void DepthAnalyzer::updateData(uchar *image, ushort *depth, int width, int heigh
             direction = d->lastDirection;
     }
     // check if direction changed
-    if (direction != d->lastDirection) {
+    if ((direction != d->lastDirection) || (qAbs(centerX - d->lastCenterX) > swipeThreshold)) {
         // emit swipe signal if threshold has been reached
         if (qAbs(centerX - d->lastCenterX) > swipeThreshold) {
             if (d->lastDirection == QSwipeGesture::Left)
