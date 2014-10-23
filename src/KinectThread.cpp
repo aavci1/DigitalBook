@@ -1,6 +1,8 @@
 #include "KinectThread.h"
 
-#include <XnCppWrapper.h>
+#include <OpenNI.h>
+
+using namespace openni;
 
 class KinectThreadPrivate {
 public:
@@ -25,76 +27,57 @@ KinectThread::~KinectThread() {
 }
 
 void KinectThread::run() {
-    // initialize kinect
-    xn::Context context;
-    xn::ScriptNode scriptNode;
-    xn::EnumerationErrors errors;
-    XnStatus status = context.InitFromXmlFile("Config.xml", scriptNode, &errors);
-    // check status
-    if (status == XN_STATUS_NO_NODE_PRESENT) {
-        XnChar strError[1024];
-        errors.ToString(strError, 1024);
-        printf("%s\n", strError);
-        return;
-    } else if (status != XN_STATUS_OK) {
-        printf("Open failed: %s\n", xnGetStatusString(status));
-        return;
-    }
+    // initialize OpenNI
+    OpenNI::initialize();
 
-    // find depth generator node
-    xn::DepthGenerator depthGenerator;
-    status = context.FindExistingNode(XN_NODE_TYPE_DEPTH, depthGenerator);
-    if (status != XN_STATUS_OK) {
-        printf("No depth node exists! Check your XML.");
-        return;
-    }
-    // set depth metadata
-    xn::DepthMetaData depthMetaData;
-    depthGenerator.GetMetaData(depthMetaData);
+    // open device
+    Device device;
+    device.open(ANY_DEVICE);
 
-    // find image node
-    xn::ImageGenerator imageGenerator;
-    status = context.FindExistingNode(XN_NODE_TYPE_IMAGE, imageGenerator);
-    if (status != XN_STATUS_OK) {
-        printf("No image node exists! Check your XML.");
-        return;
-    }
-    // set image metadata
-    xn::ImageMetaData imageMetaData;
-    imageGenerator.GetMetaData(imageMetaData);
+    // create depth stream
+    VideoStream depthStream;
+    depthStream.create(device, SENSOR_IR);
 
-    // make sure that resolutions are equal
-    if (imageMetaData.FullXRes() != depthMetaData.FullXRes() || imageMetaData.FullYRes() != depthMetaData.FullYRes()) {
-        printf("The device depth and image resolution must be equal!\n");
-        return;
-    }
-    int width = imageMetaData.FullXRes();
-    int height = imageMetaData.FullYRes();
+    // start depth stream
+    depthStream.start();
 
-    // check image pixel format
-    if (imageMetaData.PixelFormat() != XN_PIXEL_FORMAT_RGB24) {
-        printf("The device image format must be RGB24\n");
-        return;
-    }
+    // depth frame
+    VideoFrameRef depthFrame;
 
-    // loop until aborted
     while (!d->abort) {
-        // get a new frame
-        XnStatus rc = context.WaitAnyUpdateAll();
-        if (rc != XN_STATUS_OK) {
-            printf("Read failed: %s\n", xnGetStatusString(rc));
-            break;
+        if (device.getSensorInfo(SENSOR_IR) != NULL) {
+            // read frame
+            depthStream.readFrame(&depthFrame);
+
+            if (depthFrame.isValid()) {
+                // get depth data
+                const uint16_t *depthData = (const uint16_t *)depthFrame.getData();
+
+                // get frame width and height
+                int width = depthFrame.getWidth(), height = depthFrame.getHeight();
+
+                // create depth buffer
+                uint16_t *depthBuffer = new uint16_t[width * height];
+
+                // copy data to the buffer
+                memcpy(depthBuffer, depthData, width * height * sizeof(uint16_t));
+            }
         }
-        // get image data
-        imageGenerator.GetMetaData(imageMetaData);
-        depthGenerator.GetMetaData(depthMetaData);
-        // create buffers
-        uchar *imageData = new uchar[width * height * 3];
-        ushort *depthData = new ushort[width * height];
-        // copy data
-        memcpy(imageData, imageMetaData.RGB24Data(), width * height * 3);
-        memcpy(depthData, depthMetaData.Data(), width * height * sizeof(ushort));
-        // emit signal
-        emit captured(imageData, depthData, width, height);
+
+//        // create buffers
+//        uchar *imageData = new uchar[width * height * 3];
+//        ushort *depthData = new ushort[width * height];
+//        // copy data
+//        memcpy(imageData, imageMetaData.RGB24Data(), width * height * 3);
+//        memcpy(depthData, depthMetaData.Data(), width * height * sizeof(ushort));
+//        // emit signal
+//        emit captured(imageData, depthData, width, height);
     }
+
+    // stop depth stream
+    depthStream.stop();
+    depthStream.destroy();
+
+    // close device
+    device.close();
 }

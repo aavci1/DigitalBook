@@ -4,12 +4,12 @@
 #  OPENNI_LIBRARIES - libraries to link against OpenNI
 #  OPENNI_FOUND - true if OpenNI has been found and can be used
 
-find_path(OPENNI_INCLUDE_DIR XnOpenNI.h
+find_path(OPENNI_INCLUDE_DIR OpenNI.h
   HINTS ENV OPENNI_DIR
-  PATH_SUFFIXES include ni
+  PATH_SUFFIXES Include include ni
 )
 
-find_library(OPENNI_LIBRARY NAMES OpenNI
+find_library(OPENNI_LIBRARY NAMES OpenNI2
   HINTS ENV OPENNI_DIR
   PATH_SUFFIXES lib lib64
 )
